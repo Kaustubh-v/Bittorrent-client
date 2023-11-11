@@ -1,0 +1,24 @@
+{
+  "name": "bittorrent-client",
+  "version": "1.0.0",
+  "description": "creating a bittorrnet client",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kaustubh-v/Bittorrent-client.git"
+  },
+  "author": "kaustubh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kaustubh-v/Bittorrent-client/issues"
+  },
+  "homepage": "https://github.com/Kaustubh-v/Bittorrent-client#readme",
+  "dependencies": {
+    "bencode": "^4.0.0"
+  },
+  "type": "module"
+}
