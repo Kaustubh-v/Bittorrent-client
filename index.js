@@ -1,6 +1,7 @@
 'use strict';
 import bencode from 'bencode';
 import fs from 'fs';
+import { getPeers } from './tracker.js';
 
 // Specify the path to your torrent file
 const torrentFilePath = 'puppy.torrent';
@@ -8,16 +9,13 @@ const torrentFilePath = 'puppy.torrent';
 // Read the contents of the torrent file
 try {
   const torrentContent = fs.readFileSync(torrentFilePath);
-  
-  // Decode the torrent content using bencode
-  const decodedTorrent = bencode.decode(torrentContent);
 
-  // Log some information from the decoded torrent data
-  console.log('Torrent Info:');
-  console.log('Name:', decodedTorrent.info.name.toString('utf8'));
-  console.log('Announce:', decodedTorrent.announce.toString('utf8'));
-  console.log('Piece Length:', decodedTorrent.info['piece length']);
-  console.log('Number of Pieces:', decodedTorrent.info.pieces.length / 20); // Each piece is 20 bytes
+  const torrent = bencode.decode(torrentContent);
+  console.log("torrent is : " ,torrent.announce)
+  
+  getPeers(torrent , peers => {
+    console.log('list of peers: ' , peers);
+  });   
 
 } catch (error) {
   console.error('Error reading or decoding the torrent file:', error.message);
