@@ -2,15 +2,15 @@
 import bencode from 'bencode';
 import fs from 'fs';
 import { getPeers } from './tracker.js';
+import { openTorrentFile } from './torrent-parser.js'
 
 // Specify the path to your torrent file
 const torrentFilePath = 'puppy.torrent';
 
 // Read the contents of the torrent file
 try {
-  const torrentContent = fs.readFileSync(torrentFilePath);
 
-  const torrent = bencode.decode(torrentContent);
+  const torrent = openTorrentFile(torrentFilePath);
   console.log("torrent is : " ,torrent.announce)
   
   getPeers(torrent , peers => {
