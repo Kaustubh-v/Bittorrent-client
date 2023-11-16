@@ -2,6 +2,7 @@
 import bencode from 'bencode';
 import fs from 'fs';
 import crypto from 'crypto'
+import { Buffer } from 'buffer';
 
 export const openTorrentFile = (filepath) =>{
     return bencode.decode(fs.readFileSync(filepath));
