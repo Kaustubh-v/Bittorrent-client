@@ -5,7 +5,7 @@ import { getPeers } from './tracker.js';
 import { openTorrentFile } from './torrent-parser.js'
 
 // Specify the path to your torrent file
-const torrentFilePath = 'secondFile.torrent';
+const torrentFilePath = 'puppy.torrent';
 
 // Read the contents of the torrent file
 try {
