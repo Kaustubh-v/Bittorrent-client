@@ -1,33 +1,34 @@
-'use strict';
-import bencode from 'bencode';
-import fs from 'fs';
-import crypto from 'crypto'
-import { Buffer } from 'buffer';
+"use strict";
+import bencode from "bencode";
+import fs from "fs";
+import crypto from "crypto";
+import { Buffer } from "buffer";
 
-export const openTorrentFile = (filepath) =>{
-    return bencode.decode(fs.readFileSync(filepath));
+export const openTorrentFile = (filepath) => {
+  return bencode.decode(fs.readFileSync(filepath));
 };
 
-export const infoHash = torrent =>{
-    const info = bencode.encode(torrent.info);
-    return crypto.createHash('sha1').update(info).digest();
+export const infoHash = (torrent) => {
+  const info = bencode.encode(torrent.info);
+  return crypto.createHash("sha1").update(info).digest();
 };
 
-export const findTorrentSize = torrent =>{
-        const size = torrent.info.files ?
-            torrent.info.files.map(file => file.length).reduce((a, b) => a+b):
-            torrent.info.length;
-        
-        return Buffer.from(size.toString(16), 'hex');
+export const findTorrentSize = (torrent) => {
+  const size = torrent.info.files
+    ? torrent.info.files.map((file) => file.length).reduce((a, b) => a + b)
+    : torrent.info.length;
 
+  return Buffer.from(size.toString(16), "hex");
 };
 
 export const BLOCK_LEN = Math.pow(2, 14);
 
 export const pieceLen = (torrent, pieceIndex) => {
-  const totalLength = Number(BigInt('0x' + findTorrentSize(torrent).toString('hex')));  
-  
-  const pieceLength = torrent.info['piece length'];
+  const totalLength = Number(
+    BigInt("0x" + findTorrentSize(torrent).toString("hex"))
+  );
+
+  const pieceLength = torrent.info["piece length"];
 
   const lastPieceLength = totalLength % pieceLength;
   const lastPieceIndex = Math.floor(totalLength / pieceLength);

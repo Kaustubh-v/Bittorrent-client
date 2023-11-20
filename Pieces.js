@@ -1,13 +1,15 @@
-'use strict';
+"use strict";
 
-import * as tp from './torrent-parser.js'
+import * as tp from "./torrent-parser.js";
 
 export class Pieces {
   constructor(torrent) {
     function buildPiecesArray() {
       const nPieces = torrent.info.pieces.length / 20;
       const arr = new Array(nPieces).fill(null);
-      return arr.map((_, i) => new Array(tp.blocksPerPiece(torrent, i)).fill(false));
+      return arr.map((_, i) =>
+        new Array(tp.blocksPerPiece(torrent, i)).fill(false)
+      );
     }
 
     this._requested = buildPiecesArray();
@@ -25,14 +27,14 @@ export class Pieces {
   }
 
   needed(pieceBlock) {
-    if (this._requested.every(blocks => blocks.every(i => i))) {
-      this._requested = this._received.map(blocks => blocks.slice());
+    if (this._requested.every((blocks) => blocks.every((i) => i))) {
+      this._requested = this._received.map((blocks) => blocks.slice());
     }
     const blockIndex = pieceBlock.begin / tp.BLOCK_LEN;
     return !this._requested[pieceBlock.index][blockIndex];
   }
 
   isDone() {
-    return this._received.every(blocks => blocks.every(i => i));
+    return this._received.every((blocks) => blocks.every((i) => i));
   }
-};
+}

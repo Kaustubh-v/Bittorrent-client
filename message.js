@@ -1,11 +1,10 @@
-'use strict';
+"use strict";
 
-import { Buffer } from 'buffer';
-import { infoHash } from './torrent-parser.js';
-import { genId } from './utils.js';
+import { Buffer } from "buffer";
+import { infoHash } from "./torrent-parser.js";
+import { genId } from "./utils.js";
 
-
-export const parse = msg => {
+export const parse = (msg) => {
   // if msg len less than 4 then it is a keep alive message
   const id = msg.length > 4 ? msg.readInt8(4) : null;
   let payload = msg.length > 5 ? msg.slice(5) : null;
@@ -13,25 +12,25 @@ export const parse = msg => {
     const rest = payload.slice(8);
     payload = {
       index: payload.readInt32BE(0),
-      begin: payload.readInt32BE(4)
+      begin: payload.readInt32BE(4),
     };
-    payload[id === 7 ? 'block' : 'length'] = rest;
+    payload[id === 7 ? "block" : "length"] = rest;
   }
 
   return {
-    size : msg.readInt32BE(0),
-    id : id,
-    payload : payload
-  }
+    size: msg.readInt32BE(0),
+    id: id,
+    payload: payload,
+  };
 };
 
-export const buildHandshake = torrent => {
+export const buildHandshake = (torrent) => {
   console.log("building handshake message...");
   const buf = Buffer.alloc(68);
   // pstrlen
   buf.writeUInt8(19, 0);
   // pstr
-  buf.write('BitTorrent protocol', 1);
+  buf.write("BitTorrent protocol", 1);
   // reserved
   buf.writeUInt32BE(0, 20); //4 bytes of 0's
   buf.writeUInt32BE(0, 24); //4 bytes of 0's
@@ -39,8 +38,8 @@ export const buildHandshake = torrent => {
   infoHash(torrent).copy(buf, 28);
   // peer id
   const peer_id = genId();
-  console.log("peer id from utils : " , peer_id);
-  Buffer.concat([buf,peer_id]);
+  console.log("peer id from utils : ", peer_id);
+  Buffer.concat([buf, peer_id]);
   // buf.write(peer_id);
   return buf;
 };
@@ -89,7 +88,7 @@ export const buildUninterested = () => {
 };
 
 // have: <len=0005><id=4><piece index>
-export const buildHave = payload => {
+export const buildHave = (payload) => {
   const buf = Buffer.alloc(9);
   // length
   buf.writeUInt32BE(5, 0);
@@ -101,7 +100,7 @@ export const buildHave = payload => {
 };
 
 // bitfield: <len=0001+X><id=5><bitfield>
-export const buildBitfield = bitfield => {
+export const buildBitfield = (bitfield) => {
   const buf = Buffer.alloc(14);
   // length
   buf.writeUInt32BE(payload.length + 1, 0);
@@ -113,7 +112,7 @@ export const buildBitfield = bitfield => {
 };
 
 // request: <len=0013><id=6><index><begin><length>
-export const buildRequest = payload => {
+export const buildRequest = (payload) => {
   const buf = Buffer.alloc(17);
   // length
   buf.writeUInt32BE(13, 0);
@@ -129,7 +128,7 @@ export const buildRequest = payload => {
 };
 
 // piece: <len=0009+X><id=7><index><begin><block>
-export const buildPiece = payload => {
+export const buildPiece = (payload) => {
   const buf = Buffer.alloc(payload.block.length + 13);
   // length
   buf.writeUInt32BE(payload.block.length + 9, 0);
@@ -145,7 +144,7 @@ export const buildPiece = payload => {
 };
 
 // cancel: <len=0013><id=8><index><begin><length>
-export const buildCancel = payload => {
+export const buildCancel = (payload) => {
   const buf = Buffer.alloc(17);
   // length
   buf.writeUInt32BE(13, 0);
@@ -161,7 +160,7 @@ export const buildCancel = payload => {
 };
 
 // port: <len=0003><id=9><listen-port>
-export const buildPort = payload => {
+export const buildPort = (payload) => {
   const buf = Buffer.alloc(7);
   // length
   buf.writeUInt32BE(3, 0);
