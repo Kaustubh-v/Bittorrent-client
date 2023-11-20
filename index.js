@@ -6,7 +6,7 @@ import { openTorrentFile } from './torrent-parser.js'
 import downlaodTorrent from './download.js';
 
 // Specify the path to your torrent file
-const torrentFilePath = 'puppy.torrent';
+const torrentFilePath = 'Adventure.Time.Fionna.and.Cake.S01E03.Cake.the.Cat.1080p.MAX.WEB-DL.DDP5.1.H.264-NTb[TGx].torrent';
 
 // Read the contents of the torrent file
 try {

@@ -4,7 +4,29 @@ import { Buffer } from 'buffer';
 import { infoHash } from './torrent-parser.js';
 import { genId } from './utils.js';
 
+
+export const parse = msg => {
+  // if msg len less than 4 then it is a keep alive message
+  const id = msg.length > 4 ? msg.readInt8(4) : null;
+  let payload = msg.length > 5 ? msg.slice(5) : null;
+  if (id === 6 || id === 7 || id === 8) {
+    const rest = payload.slice(8);
+    payload = {
+      index: payload.readInt32BE(0),
+      begin: payload.readInt32BE(4)
+    };
+    payload[id === 7 ? 'block' : 'length'] = rest;
+  }
+
+  return {
+    size : msg.readInt32BE(0),
+    id : id,
+    payload : payload
+  }
+};
+
 export const buildHandshake = torrent => {
+  console.log("building handshake message...");
   const buf = Buffer.alloc(68);
   // pstrlen
   buf.writeUInt8(19, 0);
@@ -16,7 +38,10 @@ export const buildHandshake = torrent => {
   // info hash
   infoHash(torrent).copy(buf, 28);
   // peer id
-  buf.write(genId());
+  const peer_id = genId();
+  console.log("peer id from utils : " , peer_id);
+  Buffer.concat([buf,peer_id]);
+  // buf.write(peer_id);
   return buf;
 };
 
