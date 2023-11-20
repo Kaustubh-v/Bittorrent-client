@@ -4,11 +4,12 @@ import { Buffer } from 'buffer';
 import { getPeers } from './tracker.js';
 import * as message from './message.js';
 import { Pieces } from './Pieces.js';
+import { Queue } from './Queue.js';
 
 const downlaodTorrent = torrent => {
     console.log("starting download...");
     getPeers(torrent , peers => {
-        const pieces = new Pieces(torrent.info.pieces.length / 20);
+        const pieces = new Pieces(torrent);
         peers.forEach(peer => download(peer, torrent, pieces));
     });
 };
@@ -28,7 +29,7 @@ function download(peer , torrent , pieces){
     });
     // socket.on('error' , console.log);
     console.log("calling onWholeMessage");
-    const queue = {choked: true, queue: []};
+    const queue = new Queue(torrent);
     onWholeMsg(socket , msg => msgHandler(msg,socket, pieces , queue));
 }
 
@@ -104,15 +105,14 @@ function requestPiece(socket, pieces, queue) {
   console.log("in requestPiece...");
     if (queue.choked) return null;
 
-    while (queue.queue.length) {
-    const pieceIndex = queue.queue.shift();
-    if (pieces.needed(pieceIndex)) {
-      // need to fix this
-      socket.write(message.buildRequest(pieceIndex));
-      pieces.addRequested(pieceIndex);
-      break;
+    while (queue.length()) {
+      const pieceBlock = queue.deque();
+      if (pieces.needed(pieceBlock)) {
+        socket.write(message.buildRequest(pieceBlock));
+        pieces.addRequested(pieceBlock);
+        break;
+      }
     }
-  }
 }
 
 function isHandshake(msg) {
