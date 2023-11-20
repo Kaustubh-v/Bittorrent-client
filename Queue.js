@@ -13,7 +13,7 @@ export class Queue {
         const pieceBlock = {
           index: pieceIndex,
           begin: i * tp.BLOCK_LEN,
-          length: this.blockLen(this._torrent, pieceIndex, i)
+          length: tp.blockLen(this._torrent, pieceIndex, i)
         };
         this._queue.push(pieceBlock);
       }

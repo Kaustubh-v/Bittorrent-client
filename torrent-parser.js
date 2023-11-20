@@ -25,7 +25,8 @@ export const findTorrentSize = torrent =>{
 export const BLOCK_LEN = Math.pow(2, 14);
 
 export const pieceLen = (torrent, pieceIndex) => {
-  const totalLength = Number(BigInt('0x' + this.size(torrent).toString('hex')));  
+  const totalLength = Number(BigInt('0x' + findTorrentSize(torrent).toString('hex')));  
+  
   const pieceLength = torrent.info['piece length'];
 
   const lastPieceLength = totalLength % pieceLength;
@@ -35,15 +36,15 @@ export const pieceLen = (torrent, pieceIndex) => {
 };
 
 export const blocksPerPiece = (torrent, pieceIndex) => {
-  const pieceLength = this.pieceLen(torrent, pieceIndex);
-  return Math.ceil(pieceLength / this.BLOCK_LEN);
+  const pieceLength = pieceLen(torrent, pieceIndex);
+  return Math.ceil(pieceLength / BLOCK_LEN);
 };
 
 export const blockLen = (torrent, pieceIndex, blockIndex) => {
-  const pieceLength = this.pieceLen(torrent, pieceIndex);
+  const pieceLength = pieceLen(torrent, pieceIndex);
 
-  const lastPieceLength = pieceLength % this.BLOCK_LEN;
-  const lastPieceIndex = Math.floor(pieceLength / this.BLOCK_LEN);
+  const lastPieceLength = pieceLength % BLOCK_LEN;
+  const lastPieceIndex = Math.floor(pieceLength / BLOCK_LEN);
 
-  return blockIndex === lastPieceIndex ? lastPieceLength : this.BLOCK_LEN;
+  return blockIndex === lastPieceIndex ? lastPieceLength : BLOCK_LEN;
 };

@@ -18,7 +18,7 @@ try {
   // getPeers(torrent , peers => {
   //   console.log('list of peers: ' , peers);
   // });  
-  downlaodTorrent(torrent);
+  downlaodTorrent(torrent, torrent.info.name);
 
 } catch (error) {
   console.error('Error reading or decoding the torrent file:', error.message);

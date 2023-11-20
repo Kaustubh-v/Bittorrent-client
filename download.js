@@ -5,17 +5,19 @@ import { getPeers } from './tracker.js';
 import * as message from './message.js';
 import { Pieces } from './Pieces.js';
 import { Queue } from './Queue.js';
+import fs from 'fs';
 
-const downlaodTorrent = torrent => {
+const downlaodTorrent = (torrent, path) => {
     console.log("starting download...");
     getPeers(torrent , peers => {
         const pieces = new Pieces(torrent);
-        peers.forEach(peer => download(peer, torrent, pieces));
+        const file = fs.openSync(path , 'w');
+        peers.forEach(peer => download(peer, torrent, pieces, file));
     });
 };
 
 
-function download(peer , torrent , pieces){
+function download(peer , torrent , pieces, file){
     console.log("peer =",peer.ip , "peer port : " , peer.port);
     var socket = new net.Socket();
     console.log("socket created");
@@ -30,7 +32,7 @@ function download(peer , torrent , pieces){
     // socket.on('error' , console.log);
     console.log("calling onWholeMessage");
     const queue = new Queue(torrent);
-    onWholeMsg(socket , msg => msgHandler(msg,socket, pieces , queue));
+    onWholeMsg(socket , msg => msgHandler(msg,socket, pieces , queue, file,torrent));
 }
 
 // for reveiving the whole message at once
@@ -56,7 +58,7 @@ function onWholeMsg(socket, callback) {
   }
 
 // this is the callback function for onWholeMsg
-function msgHandler(msg, socket, pieces , queue) {
+function msgHandler(msg, socket, pieces , queue , file, torrent) {
     console.log("inside msghandler...");
     if (isHandshake(msg)) {
         //if message rcvd is handshake then send interested message
@@ -67,8 +69,8 @@ function msgHandler(msg, socket, pieces , queue) {
         if (m.id === 0) chokeHandler(socket);
         if (m.id === 1) unchokeHandler(socket, pieces, queue);
         if (m.id === 4) haveHandler(m.payload , socket , pieces , queue);
-        if (m.id === 5) bitfieldHandler(m.payload,socket, pieces, queue);
-        if (m.id === 7) pieceHandler(m.payload, socket, pieces, queue);
+        if (m.id === 5) bitfieldHandler(socket, pieces, queue,m.payload,);
+        if (m.id === 7) pieceHandler(socket, pieces, queue, torrent , m.payload , file);
       }
 }
 
@@ -87,19 +89,38 @@ function unchokeHandler(socket, pieces, queue) {//
 function haveHandler(payload, socket , pieces, queue) { // 
   console.log("inside have handler...");
     const pieceIndex = payload.readUInt32BE(0);
-    queue.queue.push(pieceIndex);
-    if (queue.queue.length === 1) {
-        requestPiece(socket, pieces, queue);
-    } 
+    const queueEmpty = queue.length === 0;
+  queue.queue(pieceIndex);
+  if (queueEmpty) requestPiece(socket, pieces, queue);
 }
 
-function bitfieldHandler(payload) { // 
+function bitfieldHandler(socket, pieces, queue, payload) {
+  console.log("inside bitfieldHandler...")
+  const queueEmpty = queue.length === 0;
+  payload.forEach((byte, i) => {
+    for (let j = 0; j < 8; j++) {
+      if (byte % 2) queue.queue(i * 8 + 7 - j);
+      byte = Math.floor(byte / 2);
+    }
+  });
+  if (queueEmpty) requestPiece(socket, pieces, queue);
 }
 
-function pieceHandler(payload, socket, pieces, queue) { //
-    queue.shift();
-    requestPiece(socket, pieces, queue);
- }
+function pieceHandler(socket, pieces, queue, torrent, pieceResp, file) {
+  console.log("pieceResp = " , pieceResp);
+  pieces.addReceived(pieceResp);
+
+  const offset = pieceResp.index * torrent.info['piece length'] + pieceResp.begin;
+  fs.write(file, pieceResp.block, 0, pieceResp.block.length, offset, () => {});
+
+  if (pieces.isDone()) {
+    socket.end();
+    console.log('DONE!');
+    try { fs.closeSync(file); } catch(e) {}
+  } else {
+    requestPiece(socket,pieces, queue);
+  }
+}
 
 function requestPiece(socket, pieces, queue) {
   console.log("in requestPiece...");
